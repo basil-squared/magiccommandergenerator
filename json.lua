@@ -11,7 +11,7 @@ local escape_characters = {
     ['t']  = '\t'
 }
 
-local function parse_string(str, position)
+local function parse_string(str, pos)
     local ret = {} -- this will be better for performance. you'll see
     pos = pos + 1  -- skips over opening quote...
 
@@ -40,22 +40,56 @@ local function parse_string(str, position)
     error("End of file without closing quote")
 end
 
-local function skip_whitespace(str, position)
+local function skip_whitespace(str, position) -- TODO: implement
 end
 local function parse_object(str, position)
+    --recursion recursion recursion recursion
+    local obj = {}
+    position = position + 1
+    while true do
+        position = skip_whitespace(str, position)
+        if str:sub(position, position) == '}' then
+            return obj, position + 1 -- empty
+        end
+        -- get key (has to be string)
+        local key
+        key, position = parse_string(str, position)
+        position = skip_whitespace(str, position)
+        -- skip over colon
+        if str:sub(position, position) ~= ':' then error("Expected ':") end
+        position = position + 1
+
+        -- now we get the value burrp
+        local value
+        value, position = parse_value(str, position)
+
+        -- store on that thang
+        obj[key] = value
+
+        --lets see if it sa comma or we gotta end it here
+        position = skip_whitespace(str, position)
+        local next_char = str:sub(position, position)
+        if next_char == '}' then
+            return obj, position + 1
+        elseif next_char == ',' then
+            position = position + 1 -- skip it and thus the snake eats itself once more
+        else
+            error("You ruined it. (expected , or })")
+        end
+    end
 end
-local function parse_array(str, position)
+local function parse_array(str, position)  -- TODO: implement
 end
-local function parse_number(str, position)
+local function parse_number(str, position) -- TODO:implement
 end
 
 local function parse_value(str, position)
-    pos = skip_whitespace(str, position)
+    position = skip_whitespace(str, position)
     local char = str:sub(position, position)
     if char == '{' then
         return parse_object(str, position) -- objects
     elseif char == '[' then
-        return parse_array(str, position) -- array
+        return parse_array(str, position)  -- array
     elseif char == '"' then
         return parse_string(str, position) -- strings
     elseif char:match("[%d%-]") then
