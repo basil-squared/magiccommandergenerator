@@ -45,6 +45,7 @@ end
 local local_size = get_local_size(output_filename)
 if local_size > 0 and local_size == total_size then
     print("sizes are identical, skipping download")
+    --opens the file so we. dont have to do this twice
 else
     print("downloading MTGJson to fetch cards.. please wait..")
     local success, code, response, status = https.request {
@@ -52,4 +53,3 @@ else
         sink = progress_sink
     }
 end
--- opens the file so we dont have to do this twice
