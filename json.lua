@@ -40,7 +40,9 @@ local function parse_string(str, pos)
     error("End of file without closing quote")
 end
 
-local function skip_whitespace(str, position) -- TODO: implement
+local function skip_whitespace(str, position)
+    local next_pos = str:find("[^ \t\r\n]", position)
+    return next_pos or (#str + 1)
 end
 local function parse_object(str, position)
     --recursion recursion recursion recursion
@@ -78,9 +80,45 @@ local function parse_object(str, position)
         end
     end
 end
-local function parse_array(str, position)  -- TODO: implement
+local function parse_array(str, position)
+    local arr = {}
+    local index = 1 -- starts at one because lua does
+    while true do
+        position = skip_whitespace(str, position)
+
+        -- is it empty?
+        if str:sub(position, position) == ']' then
+            return arr, position + 1
+        end
+        local value
+        value, position = parse_value(str, position)
+
+        arr[index] = value
+        index = index + 1
+        position = skip_whitespace(str, position)
+        local next_char = str:sub(position, position)
+        if next_char == ']' then
+            return arr, position + 1
+        elseif next_char == ',' then
+            position = position + 1
+        else
+            error("expected a fucjing , or ] in array at position " .. position)
+        end
+    end
 end
-local function parse_number(str, position) -- TODO:implement
+local function parse_number(str, position)
+    -- search for first character that isnt a number
+    local end_pos = str:find("[^%d%.%-+eE]", position)
+    -- if nil, we go to the end of the piece of text
+    end_pos = end_pos or (#str + 1)
+    -- get the string that represents the 'number'
+    local num_str = str:sub(position, end_pos - 1)
+
+    local number = tonumber(num_str)
+    if not number then
+        error("invalid number " .. position .. ": " .. num_str)
+    end
+    return number, end_pos
 end
 
 local function parse_value(str, position)

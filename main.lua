@@ -1,6 +1,7 @@
 local https = require('ssl.https')
 local ltn12 = require("ltn12")
 local io = require("io")
+local json = require("./json.lua")
 local mtgjson_url = "https://mtgjson.com/api/v5/AtomicCards.json"
 local output_filename = "atomiccards.json"
 -- function that just grabs the size of a file
